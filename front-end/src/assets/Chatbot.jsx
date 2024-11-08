@@ -1,80 +1,76 @@
-// src/ChatBot.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-function ChatBot() {
+function ChatBot({ selectedChat }) {
   const [message, setMessage] = useState('');
-  const [conversation, setConversation] = useState([]);
+  const [chatMessages, setChatMessages] = useState(selectedChat ? selectedChat.messages : []);
 
-  // Fetch chat history on load
-  useEffect(() => {
-    const fetchMessages = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/message');
-        if (response.ok) {
-          const data = await response.json();
-          setConversation(data);
-        } else {
-          console.error('Failed to fetch messages:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching messages:', error);
-      }
-    };
-    fetchMessages();
-  }, []);
-
-  // Handle sending a new message
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
-
+  // OpenAI modeline mesajı gönderen API
+  const sendMessageToOpenAI = async (message) => {
     try {
-      const response = await fetch('http://localhost:5000/api/message', {
+      const response = await fetch('https://api.openai.com/v1/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer YOUR_API_KEY`, // OpenAI API key buraya gelecek
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({
+          model: 'text-davinci-003', // Kullanılacak model
+          prompt: message, // Kullanıcının mesajı
+          max_tokens: 150, // Cevap uzunluğu
+        }),
       });
 
-      if (response.ok) {
-        const { reply: botReply } = await response.json();
-
-        setConversation([
-          ...conversation,
-          { sender: 'user', text: message },
-          { sender: 'bot', text: botReply },
-        ]);
-
-        setMessage(''); // Clear input after sending
-      } else {
-        console.error('Failed to send message:', response.statusText);
-      }
+      const data = await response.json();
+      return data.choices[0].text; // API'den dönen cevabı al
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error sending message to OpenAI:', error);
     }
   };
 
+  // Mesaj gönderme işlemi
+  const handleSendMessage = async () => {
+    if (message.trim()) {
+      const response = await sendMessageToOpenAI(message);
+      setChatMessages([
+        ...chatMessages,
+        { sender: 'user', text: message },
+        { sender: 'bot', text: response },
+      ]);
+      setMessage('');
+    }
+  };
+
+  if (!selectedChat) {
+    return (
+      <div className="flex flex-col items-center p-5 bg-gray-100 text-lg">
+        <h2 className="text-xl font-bold">ChatBot</h2>
+        <p>No chat selected</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col items-center p-5 max-w-md mx-auto mt-10 border rounded-lg shadow-lg bg-white">
-      <h2 className="text-2xl font-bold mb-4 text-center">ChatBot</h2>
-      <div className="w-full h-64 overflow-y-scroll border border-gray-300 p-4 mb-4 rounded-lg">
-        {conversation.map((msg, index) => (
+    <div className="flex flex-col p-5 bg-gray-100">
+      <h2 className="text-xl font-bold mb-4">Chat: {selectedChat.name}</h2>
+      <div className="h-64 overflow-y-scroll mb-4 border p-4 bg-white rounded-lg">
+        {chatMessages.map((msg, index) => (
           <div
             key={index}
-            className={`mb-2 p-2 rounded-lg max-w-xs ${msg.sender === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-gray-200 text-gray-800 mr-auto'}`}
+            className={`mb-2 p-2 rounded-lg max-w-xs ${
+              msg.sender === 'user' ? 'bg-blue-500 text-white ml-auto' : 'bg-gray-200 text-gray-800 mr-auto'
+            }`}
           >
             <strong>{msg.sender === 'user' ? 'You' : 'Bot'}:</strong> {msg.text}
           </div>
         ))}
       </div>
-      <div className="w-full flex">
+      <div className="flex items-center mb-4">
         <input
           type="text"
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
           className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:outline-none"
           placeholder="Type your message..."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
         />
         <button
           onClick={handleSendMessage}
