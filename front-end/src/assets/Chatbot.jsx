@@ -42,9 +42,9 @@ function ChatBot({ selectedChat }) {
 
   if (!selectedChat) {
     return (
-      <div className="flex flex-col items-center p-5 bg-gray-100 text-lg">
-        <h2 className="text-xl font-bold">ChatBot</h2>
-        <p>No chat selected</p>
+      <div className="flex flex-col items-center justify-center h-full">
+        <h2 className="text-2xl font-bold mb-4">Chat Başla</h2>
+        <p className="text-lg">Bir sohbet seçin veya yeni bir sohbet başlatın.</p>
       </div>
     );
   }

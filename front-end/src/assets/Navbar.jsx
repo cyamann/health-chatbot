@@ -2,14 +2,14 @@ import React from 'react';
 
 function Navbar({ chats, onChatSelect }) {
   return (
-    <div className="w-64 p-5 bg-gray-200 border-r">
-      <h3 className="text-xl font-bold mb-4">Chats</h3>
-      <ul className="space-y-2">
+    <div className="flex flex-col w-64 p-5 bg-gray-800 text-white h-full">
+      <h2 className="text-2xl font-bold mb-4">Sohbetler</h2>
+      <ul>
         {chats.map((chat) => (
           <li
             key={chat.id}
             onClick={() => onChatSelect(chat)}
-            className="cursor-pointer p-2 hover:bg-gray-300 rounded-lg"
+            className="cursor-pointer hover:bg-gray-600 p-2 rounded-lg mb-2"
           >
             {chat.name}
           </li>
