@@ -1,64 +1,40 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
-const Message = require('./models/Message');
-const sequelize = require('./db'); // sequelize'i doğru şekilde içeri aktar
+const app = require('./src/app');
+const { logger } = require('./src/config/logger');
+const sequelize = require('./src/config/database');
 
-dotenv.config(); // .env dosyasını yükle
+const PORT = process.env.PORT || 5000;
 
-const app = express();
-app.use(bodyParser.json());
+global.logger = logger;
 
-// Chatbot mesajlarını kaydedecek API
-app.post('/api/message', async (req, res) => {
-  const { message } = req.body;
+function startServer() {
+  sequelize.sync({ force: false })
+    .then(() => {
+      global.logger.info('Database synchronized successfully.');
 
-  try {
-    // Kullanıcı mesajını veritabanına kaydet
-    const userMessage = await Message.create({
-      sender: 'user',
-      text: message,
+      const server = app.listen(PORT, () => {
+        global.logger.info(`Server is running on http://localhost:${PORT}`);
+      });
+
+      server.on('error', (err) => {
+        global.logger.critical(`Server error: ${err.message}`);
+        restartServer();
+      });
+
+    })
+    .catch((err) => {
+      global.logger.error(`Database synchronization failed: ${err.message}`);
+      restartServer();
     });
+}
 
-    // OpenAI ile yanıt al
-    const openAIClient = new Client({ apiKey: process.env.OPENAI_API_KEY });
-    const response = await openAIClient.chat.completions.create({
-      messages: [{ role: 'user', content: message }],
-      model: 'gpt-3.5-turbo',
-    });
+function restartServer() {
+  global.logger.warn('Restarting server in 5 seconds...');
+  setTimeout(startServer, 5000); 
+}
 
-    const botMessage = response.choices[0].message.content;
-
-    // Bot'un yanıtını veritabanına kaydet
-    const botResponse = await Message.create({
-      sender: 'bot',
-      text: botMessage,
-    });
-
-    // Kullanıcı ve bot mesajlarını birlikte döndür
-    res.json({ reply: botMessage });
-  } catch (error) {
-    console.error('Hata:', error);
-    res.status(500).send('Internal Server Error');
-  }
+process.on('uncaughtException', (err) => {
+  global.logger.critical(`Uncaught Exception: ${err.message}`);
+  restartServer();
 });
 
-// Sohbet geçmişini alacak API
-app.get('/api/messages', async (req, res) => {
-  try {
-    const messages = await Message.findAll({
-      order: [['timestamp', 'ASC']], // Zaman sırasına göre sırala
-    });
-    res.json(messages);
-  } catch (error) {
-    console.error('Mesajları alırken hata:', error);
-    res.status(500).send('Internal Server Error');
-  }
-});
-
-// Veritabanını senkronize et
-sequelize.sync().then(() => { // sequelize burada tanımlı
-  app.listen(5000, () => {
-    console.log('Server is running on http://localhost:5000');
-  });
-});
+startServer();
