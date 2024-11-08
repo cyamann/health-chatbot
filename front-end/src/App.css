@@ -1,4 +1,3 @@
-/* index.css veya style.css */
 * {
   margin: 0;
   padding: 0;
@@ -11,24 +10,24 @@ html, body, #root {
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #f7fafc; /* Hafif gri arka plan */
+  background-color: #f7fafc; 
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  overflow-x: hidden; /* Sağ kaymayı engeller */
+  overflow-x: hidden;
   min-height: 100vh;
 }
 
 .container {
   display: flex;
   width: 100%;
-  height: 100vh; /* Sayfanın tamamını kapsar */
+  height: 100vh; 
   overflow-x: hidden;
 }
 
 .navbar {
-  width: 250px; /* Sabit genişlik */
+  width: 250px;
   background-color: #4a90e2;
   color: white;
   padding: 20px;

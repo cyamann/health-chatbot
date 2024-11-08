@@ -4,33 +4,28 @@ function ChatBot({ selectedChat }) {
   const [message, setMessage] = useState('');
   const [chatMessages, setChatMessages] = useState(selectedChat ? selectedChat.messages : []);
 
-  // OpenAI modeline mesajı gönderen API
-  const sendMessageToOpenAI = async (message) => {
+  const sendMessageToBackend = async (message) => {
     try {
-      const response = await fetch('https://api.openai.com/v1/completions', {
+      const response = await fetch('/api/chat', { 
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_API_KEY`, // OpenAI API key buraya gelecek
         },
         body: JSON.stringify({
-          model: 'text-davinci-003', // Kullanılacak model
-          prompt: message, // Kullanıcının mesajı
-          max_tokens: 150, // Cevap uzunluğu
+          message: message,
         }),
       });
 
       const data = await response.json();
-      return data.choices[0].text; // API'den dönen cevabı al
+      return data.reply; 
     } catch (error) {
-      console.error('Error sending message to OpenAI:', error);
+      console.error('Error sending message to backend:', error);
     }
   };
 
-  // Mesaj gönderme işlemi
   const handleSendMessage = async () => {
     if (message.trim()) {
-      const response = await sendMessageToOpenAI(message);
+      const response = await sendMessageToBackend(message);
       setChatMessages([
         ...chatMessages,
         { sender: 'user', text: message },

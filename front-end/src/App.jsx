@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import ChatBot from './assets/Chatbot';
-import Navbar from './assets/Navbar'; // Navbar bileşenini içeri aktar
+import Navbar from './assets/Navbar'; 
 import './index.css';
 
 function App() {
@@ -11,13 +11,13 @@ function App() {
   ]);
 
   const handleChatSelect = (chat) => {
-    setSelectedChat(chat); // Tıklanan chat'i seç
+    setSelectedChat(chat); 
   };
 
   const handleStartNewChat = () => {
     const newChat = { id: conversation.length + 1, name: `Chat ${conversation.length + 1}`, messages: [] };
-    setConversation([...conversation, newChat]); // Yeni chat ekle
-    setSelectedChat(newChat); // Yeni chat'i seç
+    setConversation([...conversation, newChat]);
+    setSelectedChat(newChat); 
   };
 
   return (
