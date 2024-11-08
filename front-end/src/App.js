@@ -1,18 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
+import './App.css';
+import Chatbot from './ChatBot';
 
 function App() {
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    fetch('/api')
-      .then(response => response.json())
-      .then(data => setMessage(data.message));
-  }, []);
-
   return (
-    <div>
-      <h1>React ve Node.js Web Sitesi</h1>
-      <p>{message}</p>
+    <div className="App">
+      <h1>Health Chatbot</h1>
+      <Chatbot />
     </div>
   );
 }
