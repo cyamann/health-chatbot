@@ -1,15 +1,10 @@
+// routes/chatbotRoutes.js
 const express = require('express');
-//const authRoutes = require('./authRoutes');
-const articleRoutes = require('./articleRoutes.js');
-//const visitRoutes = require('./visitRoutes.js');
+const { getChatsWithMessages } = require('../controllers/chatbotController');
 
 const router = express.Router();
 
-
-//router.use('/auth', authRoutes); 
-
-router.use('/article', articleRoutes); 
-
-//router.use('/visit', visitRoutes);
+// Mesajları almak için endpoint
+router.get('/message/:id', getChatsWithMessages);
 
 module.exports = router;
