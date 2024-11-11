@@ -1,41 +1,32 @@
-const Chat = require('../models/chat');
-const Message = require('../models/message');
+const { Configuration, OpenAIApi } = require('openai');
+require('dotenv').config();
 
-const startChat = async () => {
-  const chat = await Chat.create();
-  return chat;
-};
-
-const addMessage = async (chatId, sender, text) => {
-  const message = await Message.create({ chatId, sender, text });
-  return message;
-};
-
-
-const getChatsWithMessages = async (req, res) => {
-  const chatId = req.params.id;
-
-  try {
-    const chat = await Chat.findOne({
-      where: { id: chatId },
-      include: [{
-        model: Message,
-        where: { chatId: chatId },
-        order: [['timestamp', 'ASC']], 
-      }],
+class ChatbotController {
+  constructor() {
+    // Initialize the OpenAI configuration and client
+    const configuration = new Configuration({
+      apiKey: process.env.OPENAI_API_KEY,
     });
+    this.openai = new OpenAIApi(configuration);
+  }
 
-    if (!chat) {
-      return res.status(404).json({ message: 'Sohbet bulunamadı.' });
+  async getChatResponse(message) {
+    if (!message) {
+      throw new Error('Message content is required.');
     }
 
-    res.status(200).json(chat);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Sunucu hatası' });
+    try {
+      const completion = await this.openai.createChatCompletion({
+        model: 'gpt-3.5-turbo',
+        messages: [{ role: 'user', content: message }],
+      });
+
+      return completion.data.choices[0].message.content;
+    } catch (error) {
+      console.error('Error with OpenAI API:', error.response ? error.response.data : error.message);
+      throw new Error('Failed to get response from OpenAI API.');
+    }
   }
-};
+}
 
-
-
-module.exports = { startChat, addMessage, getChatsWithMessages };
+module.exports = ChatbotController;

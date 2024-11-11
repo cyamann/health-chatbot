@@ -1,35 +1,27 @@
-const express = require("express");
-const helmet = require("helmet");
-const cors = require("cors");
-const routes = require("./routes");
-const path = require("path");
-
-require("dotenv").config();
+const express = require('express');
+const ChatbotController = require('./controllers/chatbotController'); // Adjusted import
+require('dotenv').config({ path: './.env' });
 
 const app = express();
-
-// Middleware
-app.use(
-  helmet({
-    crossOriginResourcePolicy: false,
-  })
-);
-app.use(cors());
-
 app.use(express.json());
 
-// Rotalar
-app.use("/api", routes);
+// Initialize OpenAI service
+const openAIService = new ChatbotController(); // Initialize instance of ChatbotController
+console.log("API Key:", process.env.OPENAI_API_KEY); // For debugging only
 
-// Hata Yönetimi Middleware'i
-app.use((err, req, res, next) => {
-  if (err.status >= 500) {
-    global.logger.error(`Internal Server Error: ${err.message}`);
+// Route to handle chat messages
+app.post('/api', async (req, res) => {
+  const { message } = req.body;
+
+  try {
+    const reply = await openAIService.getChatResponse(message);
+    res.json({ reply });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
   }
-
-  res.status(err.status || 500).json({
-    message: err.message || "Internal Server Error",
-  });
 });
 
-module.exports = app;
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

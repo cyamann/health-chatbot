@@ -1,40 +1,28 @@
-const app = require('./src/app');
-const { logger } = require('./src/config/logger');
-const sequelize = require('./src/config/database');
+const express = require('express');
+const ChatbotController = require('./src/controllers/chatbotController'); // Adjusted import
+require('dotenv').config();
+const cors = require('cors');
 
-const PORT = process.env.PORT || 5000;
 
-global.logger = logger;
+const app = express();
+app.use(express.json());
+app.use(cors());
+// Initialize OpenAI service
+const openAIService = new ChatbotController(); // Initialize instance of ChatbotController
 
-function startServer() {
-  sequelize.sync({ force: false })
-    .then(() => {
-      global.logger.info('Database synchronized successfully.');
+// Route to handle chat messages
+app.post('/api', async (req, res) => {
+  const { message } = req.body;
 
-      const server = app.listen(PORT, () => {
-        global.logger.info(`Server is running on http://localhost:${PORT}`);
-      });
-
-      server.on('error', (err) => {
-        global.logger.critical(`Server error: ${err.message}`);
-        restartServer();
-      });
-
-    })
-    .catch((err) => {
-      global.logger.error(`Database synchronization failed: ${err.message}`);
-      restartServer();
-    });
-}
-
-function restartServer() {
-  global.logger.warn('Restarting server in 5 seconds...');
-  setTimeout(startServer, 5000); 
-}
-
-process.on('uncaughtException', (err) => {
-  global.logger.critical(`Uncaught Exception: ${err.message}`);
-  restartServer();
+  try {
+    const reply = await openAIService.getChatResponse(message);
+    res.json({ reply });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
-startServer();
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});

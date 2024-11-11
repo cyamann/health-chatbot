@@ -6,7 +6,7 @@ function ChatBot({ selectedChat }) {
 
   const sendMessageToBackend = async (message) => {
     try {
-      const response = await fetch('/api/chat', { 
+      const response = await fetch('http://localhost:5000/api/', {//değiştir
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
