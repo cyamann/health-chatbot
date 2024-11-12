@@ -14,26 +14,24 @@ function App() {
   const handleStartNewChat = () => {
     const newChat = { id: conversation.length + 1, name: `Chat ${conversation.length + 1}`, messages: [] };
     setConversation([...conversation, newChat]);
-    setSelectedChat(newChat); // Automatically open the new chat
+    setSelectedChat(newChat); // Yeni sohbeti otomatik aç
   };
 
   return (
-    <div className="container flex">
+    <div className="container mx-auto flex flex-col md:flex-row h-screen">
       {/* Sol Sidebar (Navbar) */}
-      <div className="navbar w-1/4">
+      <div className="navbar w-full md:w-1/4 h-full bg-gray-200 p-4 overflow-y-auto">
         <Navbar chats={conversation} onChatSelect={handleChatSelect} onStartNewChat={handleStartNewChat} />
       </div>
 
       {/* Sağ ChatBot Ekranı */}
-      <div className="chat-container w-3/4 p-4">
+      <div className="chat-container flex-1 p-4">
         {selectedChat ? (
-          <div className="chatbox-wrapper">
-            <div className="chatbox bg-gray-100 p-4 rounded-lg shadow-lg">
-              <ChatBot selectedChat={selectedChat} />
-            </div>
+          <div className="chatbox bg-white p-4 rounded-lg shadow-lg h-full overflow-y-auto">
+            <ChatBot selectedChat={selectedChat} />
           </div>
         ) : (
-          <p>Yeni sohbet seçiniz ya da başlatın.</p>
+          <p className="text-center text-gray-500 mt-10">Yeni sohbet seçiniz ya da başlatın.</p>
         )}
       </div>
     </div>

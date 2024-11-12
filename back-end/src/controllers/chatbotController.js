@@ -16,8 +16,10 @@ class ChatbotController {
     }
 
     try {
+      console.log("API Key:", process.env.OPENAI_API_KEY); // For testing only
+
       const completion = await this.openai.createChatCompletion({
-        model: 'gpt-3.5-turbo',
+        model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: message }],
       });
 
